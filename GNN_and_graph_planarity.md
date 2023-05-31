@@ -10,6 +10,12 @@ There are several planarity detection algorithms that work in linear time O(n), 
 
 Let's note that Kuratowski's criteria is almost local. By 'local,' I mean that a constant-length neighborhood of each vertex needs to be examined for the planarity check. By 'almost,' I mean it's not completely local because it has to deal with subdivisions, i.e. smooth all vertices with power=2 from the subgraph.
 
+## Motivation to run GNNs on algorithmically solvable problems
+
+Historically, image classification was solved with ConvNets and other techniques. However, we don't know a lot about how people solve the image classification task, as it's an unconcious mechanism. It makes it harder to understand how NNs do it. People have found common approaches in NNs and the brain, e.g, circuits, however this knowledge will not be complete until brain functioning is understood really well.
+
+In case of algorithmic tasks on graphs we know the solution. If we train NNs to solve these problems, it might be easier to understand how are they learning and what did they learn. It's about teaching NNs what we know rather than what we can unconciously do. Therefore, training NNs algorithms can bring insights that we couldn't obtain when studying image classification, natural language processing.
+
 ## Motivation to solve planarity with GNNs
 
 The fact that the task is algorithmically solvable makes it an easy benchmark since the dataset can be auto-generated and can contain any number of graphs with various properties.
@@ -19,6 +25,8 @@ The fact that it's almost local makes it a good candidate for GNNs to solve it w
 Besides that, it's interesting to learn how GNN would deal with the main task that's not local.
 
 # Literature overview
+
+I haven't found any papers that benchmark different GNN approaches on the graph planarity task. However, I've found several interesting more theoretical papers. Here they are.
 
 ## A Property Testing Framework for the Theoretical Expressivity of Graph Kernels
 by Nils M. Kriege, Christopher Morris, Anja Rey, Christian Sohler / Proceedings of the Twenty-Seventh International Joint Conference on Artificial Intelligence / Main track. Pages 2348-2354. https://doi.org/10.24963/ijcai.2018/325
@@ -44,3 +52,38 @@ Here're some of their results (cited from the paper):
 >(see Theorem 5.4).
 
 Therefore, if one is going to embed a graph using unsupervised learning kernels, a good kernel to start with is 'k-dics'.
+
+## GNNs on NP-hard problems
+
+As a very simple and not accurate explanation, an NP-hard problem is a combinatorial problem which polynomial solution is not yet found. Moreover, there's a mathematical fact that if a solution is found to one NP-hard problem then it will be possible to polynomially solve all other NP-hard problems. Examples: graph isomorphism, minimum dominating set, minimum vertex cover, maximum matching.
+
+GNN's inference takes polynomial time relative to graph's size, GNN can't precisely solve these problems if a widely accepted assumption NP != P is true. However, it's interesting to search for more effective algorithms learned by GNNs - I think that's one of motivations.
+
+To estimate effectiveness of an algorithm solving NP-hard problems there's a notion of approximation ratios. It is actually a success metric. I won't go into detail as I don't know much about it.
+
+### How powerful are graph neural networks?
+By Keyulu Xu, Weihua Hu, Jure Leskovec, and Stefanie Jegelka
+CoRR, abs/1810.00826, 2018.
+
+### Approximation Ratios of Graph Neural Networks for Combinatorial Problems
+by Ryoma Sato, Makoto Yamada, Hisashi Kashima
+[arXiv:1905.10261 [cs.LG]](https://arxiv.org/abs/1905.10261)
+
+Authors tell that the motivation of the paper is basically the same as of Xu et al (described above), but they consider different NP-hard problems and more than 1 of them.
+
+The main topic of the paper is GNN performance on following NP-hard problems:
+* minimum dominating set problem
+* minimum vertex cover problem
+* maximum matching problem
+
+It is assumed that graphs have a bounded maximum degree (by some constant that doesn't depend on the size). As node features they mostly use one-hot encoding of node's degree.
+
+They employ a theory of distributed local algorithms that have a lot in common with GNNs. There's actually a simple generalization of GNNs that is equivalent (in graph problem solving ability) to distributed local algorithms. The latter seems to be well-studied. With that help, they show theoretical boundaries on GNN ability to solve aforementioned NP-hard problems.
+
+They generalize GNNs to a newly proposed Consistent Port Numbering GNNs that use port numbering (the paper contains a good definition of it).
+
+Summarizing, GNNs are worse than simple greedy algorithms. However, in case of Minimum Vertex Cover Problem a Consistent Port Numbering GNNs happened to be able to learn a non-trivial algorithm [2]. To my mind, it's very interesting to actually train such a GNN and investigate what did it actually learn.
+
+[2] Matti Åstrand, Patrik Floréen, Valentin Polishchuk, Joel Rybicki, Jukka Suomela, and Jara Uitto. A local 2-approximation algorithm for the vertex cover problem. In Proceedings of 23rd International Symposium on Distributed Computing, DISC 2009, pages 191–205, 2009.
+
+
