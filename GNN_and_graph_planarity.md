@@ -28,7 +28,7 @@ Besides that, it's interesting to learn how GNN would deal with the main task th
 
 I haven't found any papers that benchmark different GNN approaches on the graph planarity task. However, I've found several interesting more theoretical papers. Here they are.
 
-## A Property Testing Framework for the Theoretical Expressivity of Graph Kernels
+### A Property Testing Framework for the Theoretical Expressivity of Graph Kernels
 by Nils M. Kriege, Christopher Morris, Anja Rey, Christian Sohler / Proceedings of the Twenty-Seventh International Joint Conference on Artificial Intelligence / Main track. Pages 2348-2354. https://doi.org/10.24963/ijcai.2018/325
 
 A graph kernel is a function that calculates a numeric graph similarity based on two given graphs:
@@ -63,7 +63,9 @@ To estimate effectiveness of an algorithm solving NP-hard problems there's a not
 
 ### How powerful are graph neural networks?
 By Keyulu Xu, Weihua Hu, Jure Leskovec, and Stefanie Jegelka
-CoRR, abs/1810.00826, 2018.
+CoRR, abs/1810.00826, 2018. [arXiv:1810.00826 [cs.LG]](https://arxiv.org/abs/1810.00826)
+
+
 
 ### Approximation Ratios of Graph Neural Networks for Combinatorial Problems
 by Ryoma Sato, Makoto Yamada, Hisashi Kashima
@@ -86,4 +88,8 @@ Summarizing, GNNs are worse than simple greedy algorithms. However, in case of M
 
 [2] Matti Åstrand, Patrik Floréen, Valentin Polishchuk, Joel Rybicki, Jukka Suomela, and Jara Uitto. A local 2-approximation algorithm for the vertex cover problem. In Proceedings of 23rd International Symposium on Distributed Computing, DISC 2009, pages 191–205, 2009.
 
+### Summary
 
+Both papers above use GNNs to solve combinatorial graph problems, try to improve it and come up with some new GNN architectures that these problems better. In case of GIN (Graph Isomirphism Network), it's reported to beat prior architectures on other tasks.
+
+I guess the graph isomorphism problem appeared for a reason. And I think the reason is that if a GNN encoder is ideal then it definitely maps different graphs to different embeddings and equal (isomorphic) graphs - to the same embedding. In turn, it means that it can solve graph isomorphism problem.
