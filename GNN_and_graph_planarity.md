@@ -10,44 +10,6 @@ There are several planarity detection algorithms that work in linear time O(n), 
 
 Let's note that Kuratowski's criteria is almost local. By 'local,' I mean that a constant-length neighborhood of each vertex needs to be examined for the planarity check. By 'almost,' I mean it's not completely local because it has to deal with subdivisions, i.e. smooth all vertices with power=2 from the subgraph.
 
-## GNN short introduction
-
-There's a variety of GNN types: [A Gentle Introduction to Graph Neural Networks](https://distill.pub/2021/gnn-intro/). Let's consider only GNNs that deal with node embeddings only and don't learn embeddings for edges or the graph or take any edge features into account. I shall call them 'node-centric GNNs'.
-
-Summarizing knowledge from [Stanford CS22W](http://web.stanford.edu/class/cs224w/) and papers listed below, I suppose I can give the following temporary definition for 'node-centric GNNs'.
-
-Consider a graph G = (V, E) and a node features $h_0(v) \in \mathbb{R}^k$, $v \in V$. Let $N(v)$ be a set of all neighbour nodes of the node $v$. A GNN consists of an Encoder and Decoder parts. The Encoder calculates embeddings for each node. The Decoder uses that embeddings to solve a specific ML task.
-
-An L-layer GNN encoder is defined by L pairs of functions ($aggregate_i$, $combine_i$), where $i = 1..L$ in the following way:
-
-$$
-  h_i(v) = combine_i ( h_{i-1}(v), aggregate_i( \{ h_{i-1}(u): u \in N(v) \} ) )
-$$
-
-The function $aggregate_i$ takes a _multiset_ of node embeddings as an input to make sure it doesn't depend on the order of neighboring nodes.
-
-The decoder design depends on the task outcome set which is either of those:
-
-1. each node
-2. each edge
-3. the whole graph
-
-(I haven't seen a task that requires a mix of those, however it might be possible).
-
-Typically, the task is a classification or a regression.
-
-In case of 'each node' outcome, the decoder is just a NN which input is a node embedding. Usually it is several-layer MLP.
-
-For the case of 'each edge', Stanford CS22W mentiones two most common approaches that take edge's node embeddings and:
-
-1. Concatenate the two node embeddings + MLP
-2. Linear Dot-product of the two node embeddings ($h(v_1) \cdot W \cdot h(v_2)$, where $W$ is a matrix and $\cdot$ is a matrix multiplication.
-
-In the case of 'the whole graph' there are different approaches known:
-
-1. Introduce a virtual node that's connected with all V or a subset of V. The resulting embedding of this virtual node is considered to be an embedding of the whole graph. We then use MLP to convert an embedding into a prediction.
-2. Aggregate node embeddings. The simplest way is to use SUM or MEAN or coorinate-wise MAX. A more sophisticated approach could be to split graph nodes into hierarhical clusters and aggregate node embeddings hierarhically, doing MEAN over all cluster's node and then applying an MLP layer [1]. It's claimed to be more efficient.
-
 ## Motivation to run GNNs on algorithmically solvable problems
 
 Historically, image classification was solved with ConvNets and other techniques. However, we don't know a lot about how people solve the image classification task, as it's an unconcious mechanism. It makes it harder to understand how NNs do it. People have found common approaches in NNs and the brain, e.g, circuits, however this knowledge will not be complete until brain functioning is understood really well.
@@ -103,6 +65,34 @@ To estimate effectiveness of an algorithm solving NP-hard problems there's a not
 By Keyulu Xu, Weihua Hu, Jure Leskovec, and Stefanie Jegelka
 CoRR, abs/1810.00826, 2018. [arXiv:1810.00826 [cs.LG]](https://arxiv.org/abs/1810.00826)
 
+Authors consider a graph isomorphism test. There's a well-known Weisfeiler-Lehman (WL) graph isomorphism test [3]. There's a nice description of the test in [CS224W: Machine Learning with Graphs | 2021 | Lecture 2.3](https://youtu.be/buzsHTa4Hgs). One motivation they give is the following. Let's consider an _ideal_ GNN encoder. It then definitely maps different graphs to different embeddings and equal (isomorphic) graphs - to the same embedding. In turn, it means that it can solve graph isomorphism problem. Therefore it's natural to compare GNNs peformance with the a solid graph isomorphism detection algorithm.
+
+It turns out that a 'node-centric' GNN can't be better than WL-test. Also, there's a certain GNN kind that as powerful as the WL-test.
+
+Let me introduce their notation first, then summarize their results.
+
+----
+#### Notation
+
+Consider a graph G = (V, E) and a node features $h_0(v) \in \mathbb{R}^k$, $v \in V$. Let $N(v)$ be a set of all neighbour nodes of the node $v$. A GNN consists of an Encoder and Decoder parts. The Encoder calcSoulates embeddings for each node. The Decoder uses that embeddings to solve a specific ML task.
+
+Following the paper, let's define an L-layer GNN encoder is defined by L pairs of functions ($aggregate_i$, $combine_i$), where $i = 1..L$ in the following way:
+
+$$
+  h_i(v) = combine_i ( h_{i-1}(v), aggregate_i( \{ h_{i-1}(u): u \in N(v) \} ) )
+$$
+
+The function $aggregate_i$ takes a _multiset_ of node embeddings as an input to make sure it doesn't depend on the order of neighboring nodes.
+
+The decoder function takes node embeddings and outputs whatever is needed from the specific task. In our case, it outputs a single vector - a graph embedding.
+
+----
+
+Lemma 2 says that no GNN defined in the above manner can distinguish two non-isomorphic graphs that are not distinguished by the WL-test.
+
+In Theorem 3, they state that a GNN with sufficient number of layers can be as powerful as WL-test if $combine_i$, $aggregate_i$ and $decoder$ functions are injective. An _injective_ function is any function that maps different inputs to different outputs, i.e. $f(x_1) = f(x_2) \implies x_1 = x2$.
+
+So, they 
 
 
 ### Approximation Ratios of Graph Neural Networks for Combinatorial Problems
@@ -126,13 +116,50 @@ Summarizing, GNNs are worse than simple greedy algorithms. However, in case of M
 
 [2] Matti Åstrand, Patrik Floréen, Valentin Polishchuk, Joel Rybicki, Jukka Suomela, and Jara Uitto. A local 2-approximation algorithm for the vertex cover problem. In Proceedings of 23rd International Symposium on Distributed Computing, DISC 2009, pages 191–205, 2009.
 
-### Summary
-
-Both papers above use GNNs to solve combinatorial graph problems, try to improve it and come up with some new GNN architectures that these problems better. In case of GIN (Graph Isomirphism Network), it's reported to beat prior architectures on other tasks.
-
-I guess the graph isomorphism problem appeared for a reason. And I think the reason is that if a GNN encoder is ideal then it definitely maps different graphs to different embeddings and equal (isomorphic) graphs - to the same embedding. In turn, it means that it can solve graph isomorphism problem.
-
-
 # Links
 
 [1] _Hierarchical Graph Representation Learning with Differentiable Pooling_ Rex Ying, Jiaxuan You, Christopher Morris, Xiang Ren, William L. Hamilton, Jure Leskovec. NeurIPS 2018;  arXiv:1806.08804.
+
+[2] _How powerful are graph neural networks?_ By Keyulu Xu, Weihua Hu, Jure Leskovec, and Stefanie Jegelka. ICLR 2019, CoRR, abs/1810.00826, 2018. [arXiv:1810.00826 [cs.LG]](https://arxiv.org/abs/1810.00826)
+
+[3] _A reduction of a graph to a canonical form and an algebra arising during this reduction._ Boris Weisfeiler and A A Lehman. Nauchno-Technicheskaya Informatsia, 2(9):12–16, 1968.
+
+# Not used
+
+## GNN short introduction
+
+There's a variety of GNN types: [A Gentle Introduction to Graph Neural Networks](https://distill.pub/2021/gnn-intro/). Let's consider only GNNs that deal with node embeddings only and don't learn embeddings for edges or the graph or take any edge features into account. I shall call them 'node-centric GNNs'.
+
+Summarizing knowledge from [Stanford CS22W](http://web.stanford.edu/class/cs224w/) and papers listed below, I suppose I can give the following temporary definition for 'node-centric GNNs'.
+
+Consider a graph G = (V, E) and a node features $h_0(v) \in \mathbb{R}^k$, $v \in V$. Let $N(v)$ be a set of all neighbour nodes of the node $v$. A GNN consists of an Encoder and Decoder parts. The Encoder calculates embeddings for each node. The Decoder uses that embeddings to solve a specific ML task.
+
+Following [2], let's define an L-layer GNN encoder is defined by L pairs of functions ($aggregate_i$, $combine_i$), where $i = 1..L$ in the following way:
+
+$$
+  h_i(v) = combine_i ( h_{i-1}(v), aggregate_i( \{ h_{i-1}(u): u \in N(v) \} ) )
+$$
+
+The function $aggregate_i$ takes a _multiset_ of node embeddings as an input to make sure it doesn't depend on the order of neighboring nodes.
+
+The decoder design depends on the task outcome set which is either of those:
+
+1. each node
+2. each edge
+3. the whole graph
+
+(I haven't seen a task that requires a mix of those, however it might be possible).
+
+Typically, the task is either a classification or a regression.
+
+In case of 'each node' outcome, the decoder is just a NN which input is a node embedding. Usually it is several-layer MLP.
+
+For the case of 'each edge', Stanford CS22W mentiones two most common approaches that take edge's node embeddings and:
+
+1. Concatenate the two node embeddings + MLP
+2. Linear Dot-product of the two node embeddings ($h(v_1) \cdot W \cdot h(v_2)$, where $W$ is a matrix and $\cdot$ is a matrix multiplication.
+
+In the case of 'the whole graph' there are different approaches known:
+
+1. Introduce a virtual node that's connected with all V or a subset of V. The resulting embedding of this virtual node is considered to be an embedding of the whole graph. We then use MLP to convert an embedding into a prediction.
+2. Aggregate node embeddings. The simplest way is to use SUM or MEAN or coorinate-wise MAX. A more sophisticated approach could be to split graph nodes into hierarhical clusters and aggregate node embeddings hierarhically, doing MEAN over all cluster's node and then applying an MLP layer [1]. It's claimed to be more efficient.
