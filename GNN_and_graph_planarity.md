@@ -10,6 +10,44 @@ There are several planarity detection algorithms that work in linear time O(n), 
 
 Let's note that Kuratowski's criteria is almost local. By 'local,' I mean that a constant-length neighborhood of each vertex needs to be examined for the planarity check. By 'almost,' I mean it's not completely local because it has to deal with subdivisions, i.e. smooth all vertices with power=2 from the subgraph.
 
+## GNN short introduction
+
+There's a variety of GNN types: [A Gentle Introduction to Graph Neural Networks](https://distill.pub/2021/gnn-intro/). Let's consider only GNNs that deal with node embeddings only and don't learn embeddings for edges or the graph or take any edge features into account. I shall call them 'node-centric GNNs'.
+
+Summarizing knowledge from [Stanford CS22W](http://web.stanford.edu/class/cs224w/) and papers listed below, I suppose I can give the following temporary definition for 'node-centric GNNs'.
+
+Consider a graph G = (V, E) and a node features $h_0(v) \in \mathbb{R}^k$, $v \in V$. Let $N(v)$ be a set of all neighbour nodes of the node $v$. A GNN consists of an Encoder and Decoder parts. The Encoder calculates embeddings for each node. The Decoder uses that embeddings to solve a specific ML task.
+
+An L-layer GNN encoder is defined by L pairs of functions ($aggregate_i$, $combine_i$), where $i = 1..L$ in the following way:
+
+$$
+  h_i(v) = combine_i ( h_{i-1}(v), aggregate_i( \{ h_{i-1}(u): u \in N(v) \} ) )
+$$
+
+The function $aggregate_i$ takes a _multiset_ of node embeddings as an input to make sure it doesn't depend on the order of neighboring nodes.
+
+The decoder design depends on the task outcome set which is either of those:
+
+1. each node
+2. each edge
+3. the whole graph
+
+(I haven't seen a task that requires a mix of those, however it might be possible).
+
+Typically, the task is a classification or a regression.
+
+In case of 'each node' outcome, the decoder is just a NN which input is a node embedding. Usually it is several-layer MLP.
+
+For the case of 'each edge', Stanford CS22W mentiones two most common approaches that take edge's node embeddings and:
+
+1. Concatenate the two node embeddings + MLP
+2. Linear Dot-product of the two node embeddings ($h(v_1) \cdot W \cdot h(v_2)$, where $W$ is a matrix and $\cdot$ is a matrix multiplication.
+
+In the case of 'the whole graph' there are different approaches known:
+
+1. Introduce a virtual node that's connected with all V or a subset of V. The resulting embedding of this virtual node is considered to be an embedding of the whole graph. We then use MLP to convert an embedding into a prediction.
+2. Aggregate node embeddings. The simplest way is to use SUM or MEAN or coorinate-wise MAX. A more sophisticated approach could be to split graph nodes into hierarhical clusters and aggregate node embeddings hierarhically, doing MEAN over all cluster's node and then applying an MLP layer [1]. It's claimed to be more efficient.
+
 ## Motivation to run GNNs on algorithmically solvable problems
 
 Historically, image classification was solved with ConvNets and other techniques. However, we don't know a lot about how people solve the image classification task, as it's an unconcious mechanism. It makes it harder to understand how NNs do it. People have found common approaches in NNs and the brain, e.g, circuits, however this knowledge will not be complete until brain functioning is understood really well.
@@ -93,3 +131,8 @@ Summarizing, GNNs are worse than simple greedy algorithms. However, in case of M
 Both papers above use GNNs to solve combinatorial graph problems, try to improve it and come up with some new GNN architectures that these problems better. In case of GIN (Graph Isomirphism Network), it's reported to beat prior architectures on other tasks.
 
 I guess the graph isomorphism problem appeared for a reason. And I think the reason is that if a GNN encoder is ideal then it definitely maps different graphs to different embeddings and equal (isomorphic) graphs - to the same embedding. In turn, it means that it can solve graph isomorphism problem.
+
+
+# Links
+
+[1] _Hierarchical Graph Representation Learning with Differentiable Pooling_ Rex Ying, Jiaxuan You, Christopher Morris, Xiang Ren, William L. Hamilton, Jure Leskovec. NeurIPS 2018;  arXiv:1806.08804.
