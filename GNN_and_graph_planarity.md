@@ -67,7 +67,7 @@ CoRR, abs/1810.00826, 2018. [arXiv:1810.00826 [cs.LG]](https://arxiv.org/abs/181
 
 Authors consider a graph isomorphism test. There's a well-known Weisfeiler-Lehman (WL) graph isomorphism test [3]. There's a nice description of the test in [CS224W: Machine Learning with Graphs | 2021 | Lecture 2.3](https://youtu.be/buzsHTa4Hgs). One motivation they give is the following. Let's consider an _ideal_ GNN encoder. It then definitely maps different graphs to different embeddings and equal (isomorphic) graphs - to the same embedding. In turn, it means that it can solve graph isomorphism problem. Therefore it's natural to compare GNNs peformance with the a solid graph isomorphism detection algorithm.
 
-It turns out that a 'node-centric' GNN can't be better than WL-test. Also, there's a certain GNN kind that as powerful as the WL-test.
+It turns out that a 'node-centric' GNN can't be better than WL-test. Also, there's a certain GNN kind that as powerful as the WL-test. They propose a 'Graph Isomorphism Network' based on theoretical findings and find that it beats baselines on common graph classification benchmarks.
 
 Let me introduce their notation first, then summarize their results.
 
@@ -92,8 +92,29 @@ Lemma 2 says that no GNN defined in the above manner can distinguish two non-iso
 
 In Theorem 3, they state that a GNN with sufficient number of layers can be as powerful as WL-test if $combine_i$, $aggregate_i$ and $decoder$ functions are injective. An _injective_ function is any function that maps different inputs to different outputs, i.e. $f(x_1) = f(x_2) \implies x_1 = x2$.
 
-So, they 
+Next, they look for specific kind of GNN that tend to converge to injective functions. The basis of that search is the Corollary 6 that claims existance of such a function $f$ that
 
+$$
+  h(c, X) = (1 + \epsilon)f(c) + \sum_{x \in X} f(x)
+$$
+
+is injective. It relies on a seemingly cute maths; I refer the interested reader to the paper.
+
+So, they rely on MLP to perhaps learn that kind of injective function. Their final 'Graph Isomorphism Network' encoder setup is given in equation 4.1:
+
+$$
+  h_i(v) = MLP_i \left( (1 + \epsilon_i) h_{i-1}(v) + \sum\limits_{u \in N(v)} h_{i-1}(u))  \right)
+$$
+
+where $\epsilon_i$ is also a learnable scalar. It is not claimed to be the only option, by the way.
+
+The decoder of 'Graph Isomorphism Network' considers not only the final node embeddings (the output of the layer L) but also node embeddings generated at each layer, including the input node features:
+
+$$
+  h(G) = concat_{k = 0}^L \left( \sum\limits_{v \in V} h_k(v) \right).
+$$
+
+For the graph isomorphism task it's redundant to apply MLP on $h(G)$ since it doesn't improve its ability to differentiate graph. To my mind, MLP should be used for graph classification tasks. The idea to consider embeddings from all layers comes from [4] where it's used for 'Jumping Knowledge Networks'.
 
 ### Approximation Ratios of Graph Neural Networks for Combinatorial Problems
 by Ryoma Sato, Makoto Yamada, Hisashi Kashima
@@ -112,9 +133,7 @@ They employ a theory of distributed local algorithms that have a lot in common w
 
 They generalize GNNs to a newly proposed Consistent Port Numbering GNNs that use port numbering (the paper contains a good definition of it).
 
-Summarizing, GNNs are worse than simple greedy algorithms. However, in case of Minimum Vertex Cover Problem a Consistent Port Numbering GNNs happened to be able to learn a non-trivial algorithm [2]. To my mind, it's very interesting to actually train such a GNN and investigate what did it actually learn.
-
-[2] Matti Åstrand, Patrik Floréen, Valentin Polishchuk, Joel Rybicki, Jukka Suomela, and Jara Uitto. A local 2-approximation algorithm for the vertex cover problem. In Proceedings of 23rd International Symposium on Distributed Computing, DISC 2009, pages 191–205, 2009.
+Summarizing, GNNs are worse than simple greedy algorithms. However, in case of Minimum Vertex Cover Problem a Consistent Port Numbering GNNs happened to be able to learn a non-trivial algorithm [5]. To my mind, it's very interesting to actually train such a GNN and investigate what did it actually learn.
 
 # Links
 
@@ -123,6 +142,10 @@ Summarizing, GNNs are worse than simple greedy algorithms. However, in case of M
 [2] _How powerful are graph neural networks?_ By Keyulu Xu, Weihua Hu, Jure Leskovec, and Stefanie Jegelka. ICLR 2019, CoRR, abs/1810.00826, 2018. [arXiv:1810.00826 [cs.LG]](https://arxiv.org/abs/1810.00826)
 
 [3] _A reduction of a graph to a canonical form and an algebra arising during this reduction._ Boris Weisfeiler and A A Lehman. Nauchno-Technicheskaya Informatsia, 2(9):12–16, 1968.
+
+[4] _Representation learning on graphs with jumping knowledge networks._ Keyulu Xu, Chengtao Li, Yonglong Tian, Tomohiro Sonobe, Ken-ichi Kawarabayashi, and Stefanie Jegelka. In International Conference on Machine Learning (ICML), pp. 5453–5462, 2018.
+
+[5] Matti Åstrand, Patrik Floréen, Valentin Polishchuk, Joel Rybicki, Jukka Suomela, and Jara Uitto. A local 2-approximation algorithm for the vertex cover problem. In Proceedings of 23rd International Symposium on Distributed Computing, DISC 2009, pages 191–205, 2009.
 
 # Not used
 
