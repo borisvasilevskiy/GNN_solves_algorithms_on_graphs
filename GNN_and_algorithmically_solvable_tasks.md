@@ -1,10 +1,4 @@
-# GNNs and algorithmically solvable tasks
-
-Historically, image classification was solved with ConvNets and other techniques. However, we don't know a lot about how people solve the image classification task, as it's an unconcious mechanism. It makes it harder to understand how ConvNets do it. People have found common mechanisms in NNs and the brain, e.g, [circuits](https://distill.pub/2020/circuits/zoom-in/). However, this knowledge will not be complete until brain functioning is understood really well.
-
-In case of algorithmic tasks on graphs, we know the solution. If we train NNs to solve these problems, it might be easier to understand how are they learning and what did they learn. It's about teaching NNs what we understand rather than what we can unconciously do but don't fully understand. Therefore, training NNs algorithms can bring insights that we couldn't obtain when studying image classification and natural language processing.
-
-## Summary
+# Literacure overview
 
 This note concentrates on the grah planarity detection problem via GNNs. It contains:
 
@@ -189,43 +183,3 @@ Summarizing, GNNs are worse than simple greedy algorithms. However, in case of M
 [6] William L Hamilton, Rex Ying, and Jure Leskovec. _Inductive representation learning on large graphs._In Advances in Neural Information Processing Systems (NIPS), pp. 1025–1035, 2017a.
 
 [7] Muhan Zhang, Zhicheng Cui, Marion Neumann, and Yixin Chen. _An end-to-end deep learning architecture for graph classification_. In AAAI Conference on Artificial Intelligence, pp. 4438–4445, 2018.
-
-# Not used
-
-## GNN short introduction
-
-There's a variety of GNN types: [A Gentle Introduction to Graph Neural Networks](https://distill.pub/2021/gnn-intro/). Let's consider only GNNs that deal with node embeddings only and don't learn embeddings for edges or the graph or take any edge features into account. I shall call them 'node-centric GNNs'.
-
-Summarizing knowledge from [Stanford CS22W](http://web.stanford.edu/class/cs224w/) and papers listed below, I suppose I can give the following temporary definition for 'node-centric GNNs'.
-
-Consider a graph G = (V, E) and a node features $h_0(v) \in \mathbb{R}^k$, $v \in V$. Let $N(v)$ be a set of all neighbour nodes of the node $v$. A GNN consists of an Encoder and Decoder parts. The Encoder calculates embeddings for each node. The Decoder uses that embeddings to solve a specific ML task.
-
-Following [2], let's define an L-layer GNN encoder is defined by L pairs of functions ($aggregate_i$, $combine_i$), where $i = 1..L$ in the following way:
-
-$$
-  h_i(v) = combine_i ( h_{i-1}(v), aggregate_i( \{ h_{i-1}(u): u \in N(v) \} ) )
-$$
-
-The function $aggregate_i$ takes a _multiset_ of node embeddings as an input to make sure it doesn't depend on the order of neighboring nodes.
-
-The decoder design depends on the task outcome set which is either of those:
-
-1. each node
-2. each edge
-3. the whole graph
-
-(I haven't seen a task that requires a mix of those, however it might be possible).
-
-Typically, the task is either a classification or a regression.
-
-In case of 'each node' outcome, the decoder is just a NN which input is a node embedding. Usually it is several-layer MLP.
-
-For the case of 'each edge', Stanford CS22W mentiones two most common approaches that take edge's node embeddings and:
-
-1. Concatenate the two node embeddings + MLP
-2. Linear Dot-product of the two node embeddings ($h(v_1) \cdot W \cdot h(v_2)$, where $W$ is a matrix and $\cdot$ is a matrix multiplication.
-
-In the case of 'the whole graph' there are different approaches known:
-
-1. Introduce a virtual node that's connected with all V or a subset of V. The resulting embedding of this virtual node is considered to be an embedding of the whole graph. We then use MLP to convert an embedding into a prediction.
-2. Aggregate node embeddings. The simplest way is to use SUM or MEAN or coorinate-wise MAX. A more sophisticated approach could be to split graph nodes into hierarhical clusters and aggregate node embeddings hierarhically, doing MEAN over all cluster's node and then applying an MLP layer [1]. It's claimed to be more efficient.
