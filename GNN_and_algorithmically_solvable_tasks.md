@@ -145,7 +145,7 @@ Evaluations are performed on 9 datasets (4 bioinformatics and 5 social) against:
 
 They drop features for social datasets leaving only node degree for some of them. That's to concentrate the NN on the graph structure.
 
-Here is a result table from the paper:
+Here is the Table 1 (with 10-fold CV test results) from the paper:
 
 ![A table from this paper ([2])](images/GIN_benchmarks.png)
 
