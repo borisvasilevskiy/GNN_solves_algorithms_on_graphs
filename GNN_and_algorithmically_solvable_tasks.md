@@ -1,6 +1,16 @@
-# GNNs and graph planarity detection
+# GNNs and algorithmically solvable tasks
 
-This note contains an overview of several papers related to planarity detection via GNNs.
+Historically, image classification was solved with ConvNets and other techniques. However, we don't know a lot about how people solve the image classification task, as it's an unconcious mechanism. It makes it harder to understand how ConvNets do it. People have found common mechanisms in NNs and the brain, e.g, [circuits](https://distill.pub/2020/circuits/zoom-in/). However, this knowledge will not be complete until brain functioning is understood really well.
+
+In case of algorithmic tasks on graphs, we know the solution. If we train NNs to solve these problems, it might be easier to understand how are they learning and what did they learn. It's about teaching NNs what we understand rather than what we can unconciously do but don't fully understand. Therefore, training NNs algorithms can bring insights that we couldn't obtain when studying image classification and natural language processing.
+
+## Summary
+
+This note concentrates on the grah planarity detection problem via GNNs. It contains:
+
+* graph planarity introduction and motivation to solve it via GNNs
+* literature overview of existing (May 2023) papers related to GNNs solving graph algorithmic tasks
+* takeaways from the literature overview and high-level plans of the work I'm going to do
 
 ## Graph planarity introduction
 
@@ -9,12 +19,6 @@ An undirected graph is called 'planar' if it can be drawn on a plane without edg
 There are several planarity detection algorithms that work in linear time O(n), where n is the number of vertices. You may wonder why it's not O(E), where E is the number of edges, since that's the minimum required to read the graph. Well, there's a theorem (https://en.wikipedia.org/wiki/Planar_graph#Other_criteria) that claims the number of edges in a planar graph is <= 3n - 6. This means we won't have to read more than 3n - 6 edges of the graph to establish its planarity.
 
 Let's note that Kuratowski's criteria is almost local. By 'local,' I mean that a constant-length neighborhood of each vertex needs to be examined for the planarity check. By 'almost,' I mean it's not completely local because it has to deal with subdivisions, i.e. smooth all vertices with power=2 from the subgraph.
-
-## Motivation to run GNNs on algorithmically solvable problems
-
-Historically, image classification was solved with ConvNets and other techniques. However, we don't know a lot about how people solve the image classification task, as it's an unconcious mechanism. It makes it harder to understand how NNs do it. People have found common approaches in NNs and the brain, e.g, circuits, however this knowledge will not be complete until brain functioning is understood really well.
-
-In case of algorithmic tasks on graphs we know the solution. If we train NNs to solve these problems, it might be easier to understand how are they learning and what did they learn. It's about teaching NNs what we know rather than what we can unconciously do. Therefore, training NNs algorithms can bring insights that we couldn't obtain when studying image classification, natural language processing.
 
 ## Motivation to solve planarity with GNNs
 
@@ -65,6 +69,8 @@ To estimate effectiveness of an algorithm solving NP-hard problems there's a not
 By Keyulu Xu, Weihua Hu, Jure Leskovec, and Stefanie Jegelka
 CoRR, abs/1810.00826, 2018. [arXiv:1810.00826 [cs.LG]](https://arxiv.org/abs/1810.00826)
 
+I think, it's a very good paper. I recommend reading it rather than my overview.
+
 Authors consider a graph isomorphism test. There's a well-known Weisfeiler-Lehman (WL) graph isomorphism test [3]. There's a nice description of the test in [CS224W: Machine Learning with Graphs | 2021 | Lecture 2.3](https://youtu.be/buzsHTa4Hgs). One motivation they give is the following. Let's consider an _ideal_ GNN encoder. It then definitely maps different graphs to different embeddings and equal (isomorphic) graphs - to the same embedding. In turn, it means that it can solve graph isomorphism problem. Therefore it's natural to compare GNNs peformance with the a solid graph isomorphism detection algorithm.
 
 It turns out that a 'node-centric' GNN can't be better than WL-test. Also, there's a certain GNN kind that as powerful as the WL-test. They propose a 'Graph Isomorphism Network' based on theoretical findings and find that it beats baselines on common graph classification benchmarks.
@@ -114,7 +120,40 @@ $$
   h(G) = concat_{k = 0}^L \left( \sum\limits_{v \in V} h_k(v) \right).
 $$
 
-For the graph isomorphism task it's redundant to apply MLP on $h(G)$ since it doesn't improve its ability to differentiate graph. To my mind, MLP should be used for graph classification tasks. The idea to consider embeddings from all layers comes from [4] where it's used for 'Jumping Knowledge Networks'.
+For the graph isomorphism task it's redundant to apply MLP on $h(G)$ since it doesn't improve its ability to differentiate graph. The idea to consider embeddings from all layers comes from [4] where it's used for 'Jumping Knowledge Networks'.
+
+They also prove that 1-layer MLP is not sufficient to effectively learn an injective function. They discuss MAX and MEAN aggregations in these terms as well and find interesting details.
+
+#### Benchmarks
+
+Authors benchmark two kinds of GIN:
+* GIN- $\epsilon$: original GIN described above with trainble $\epsilon$ for each layer.
+* GIN-0: $\epsilon$ is set to 0. Thus, it's almost GCN: the difference is in the number of MLP layers and SUM/MEAN aggregator.
+
+Both GINs have 2-layer MLP. I didn't find mentiones about the hidden state normalization step that's used in GraphSAGE [6]. It may be important since the normalization step may hurt the injectiveness property of the message transformation function (f(x)). The answer can be found in their benchmark implementation at [github](https://github.com/weihua916/powerful-gnns).
+
+Evaluations are performed on 9 datasets (4 bioinformatics and 5 social) against:
+
+* theoretically less powerful GNNs:
+  * with 1-layer perceptron instead of MLP
+  * with MEAN aggregator or MAX aggregator
+  * In particular, MEAN + 1-layer is an analogy of GCN (but not precisely it!)
+  * and MAX + 1-layer is an analogy of GraphSAGE (but not precisely it!)
+* several SOTAs including:
+  * WL subtree kernel + C-SVM
+  * Anonymous Walk Embeddings, DCNN, PATCHY-SAN, DGCNN - see the paper for references
+
+They drop features for social datasets leaving only node degree for some of them. That's to concentrate the NN on the graph structure.
+
+Here is a result table from the paper:
+
+![A table from this paper ([2])](images/GIN_benchmarks.png)
+
+GINs work notably better baselines. Surprisongly, GIN-0 is strongly not worse GIN- $\epsilon$ and even outperforms it on some datasets. Here's a citation from the paper:
+
+>Comparing GINs (GIN-0 and GIN- $\epsilon$), we observe that GIN-0 slightly but consistently outperforms GIN- $\epsilon$. Since both models fit training data equally well, the better generalization of GIN-0 may be explained by its simplicity compared to GIN- $\epsilon$.
+
+
 
 ### Approximation Ratios of Graph Neural Networks for Combinatorial Problems
 by Ryoma Sato, Makoto Yamada, Hisashi Kashima
@@ -137,15 +176,19 @@ Summarizing, GNNs are worse than simple greedy algorithms. However, in case of M
 
 # Links
 
-[1] _Hierarchical Graph Representation Learning with Differentiable Pooling_ Rex Ying, Jiaxuan You, Christopher Morris, Xiang Ren, William L. Hamilton, Jure Leskovec. NeurIPS 2018;  arXiv:1806.08804.
+[1] Rex Ying, Jiaxuan You, Christopher Morris, Xiang Ren, William L. Hamilton, Jure Leskovec. _Hierarchical Graph Representation Learning with Differentiable Pooling_ NeurIPS 2018;  arXiv:1806.08804.
 
-[2] _How powerful are graph neural networks?_ By Keyulu Xu, Weihua Hu, Jure Leskovec, and Stefanie Jegelka. ICLR 2019, CoRR, abs/1810.00826, 2018. [arXiv:1810.00826 [cs.LG]](https://arxiv.org/abs/1810.00826)
+[2] Keyulu Xu, Weihua Hu, Jure Leskovec, and Stefanie Jegelka. _How powerful are graph neural networks?_ ICLR 2019, CoRR, abs/1810.00826, 2018. [arXiv:1810.00826 [cs.LG]](https://arxiv.org/abs/1810.00826)
 
-[3] _A reduction of a graph to a canonical form and an algebra arising during this reduction._ Boris Weisfeiler and A A Lehman. Nauchno-Technicheskaya Informatsia, 2(9):12–16, 1968.
+[3] Boris Weisfeiler and A A Lehman. _A reduction of a graph to a canonical form and an algebra arising during this reduction._ Nauchno-Technicheskaya Informatsia, 2(9):12–16, 1968.
 
-[4] _Representation learning on graphs with jumping knowledge networks._ Keyulu Xu, Chengtao Li, Yonglong Tian, Tomohiro Sonobe, Ken-ichi Kawarabayashi, and Stefanie Jegelka. In International Conference on Machine Learning (ICML), pp. 5453–5462, 2018.
+[4] Keyulu Xu, Chengtao Li, Yonglong Tian, Tomohiro Sonobe, Ken-ichi Kawarabayashi, and Stefanie Jegelka. _Representation learning on graphs with jumping knowledge networks._  In International Conference on Machine Learning (ICML), pp. 5453–5462, 2018.
 
-[5] Matti Åstrand, Patrik Floréen, Valentin Polishchuk, Joel Rybicki, Jukka Suomela, and Jara Uitto. A local 2-approximation algorithm for the vertex cover problem. In Proceedings of 23rd International Symposium on Distributed Computing, DISC 2009, pages 191–205, 2009.
+[5] Matti Åstrand, Patrik Floréen, Valentin Polishchuk, Joel Rybicki, Jukka Suomela, and Jara Uitto. _A local 2-approximation algorithm for the vertex cover problem._ In Proceedings of 23rd International Symposium on Distributed Computing, DISC 2009, pages 191–205, 2009.
+
+[6] William L Hamilton, Rex Ying, and Jure Leskovec. _Inductive representation learning on large graphs._In Advances in Neural Information Processing Systems (NIPS), pp. 1025–1035, 2017a.
+
+[7] Muhan Zhang, Zhicheng Cui, Marion Neumann, and Yixin Chen. _An end-to-end deep learning architecture for graph classification_. In AAAI Conference on Artificial Intelligence, pp. 4438–4445, 2018.
 
 # Not used
 
