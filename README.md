@@ -1,8 +1,8 @@
 # GNNs and algorithmically solvable tasks
 
-Historically, image classification was solved with ConvNets and other techniques. However, we don't know a lot about how people solve the image classification task, as it's an unconcious mechanism. It makes it harder to understand how ConvNets do it. People have found common mechanisms in NNs and the brain, e.g, [circuits](https://distill.pub/2020/circuits/zoom-in/). However, this knowledge will not be complete until brain functioning is understood really well.
-
-In case of algorithmic tasks on graphs, we know the solution. If we train NNs to solve these problems, it might be easier to understand how are they learning and what did they learn. It's about teaching NNs what we understand rather than what we can unconciously do but don't fully understand. Therefore, training NNs algorithms can bring insights that we couldn't obtain when studying image classification and natural language processing.
+This is an educational project which goal is to understand GNN capabilities and discover current theoretical grounds. The idea is to enginner a GNN that solves specific graph problem that have known algorithmic solution. Here's my motivation:
+1. To my best knowledge, so far GNNs aren't quite capable of solving non-trivial algorithmic tasks on graphs (see the the [Literature overview](GNN_and_algorithmically_solvable_tasks.md)). Solving them might bring novelties that may be useful for the well-established GNN challenges.
+2. If the step 1 succeeds, it will be interesting to see what it actually learned because it should've learned some algorithm. 
 
 ## Contents
 
