@@ -1,8 +1,10 @@
 # GNNs and algorithmically solvable tasks
 
-This is an educational project which goal is to understand GNN capabilities and discover current theoretical grounds. The idea is to enginner a GNN that solves specific graph problem that have known algorithmic solution. Here's my motivation:
-1. To my best knowledge, so far GNNs aren't quite capable of solving non-trivial algorithmic tasks on graphs (see the the [Literature overview](GNN_and_algorithmically_solvable_tasks.md)). Solving them might bring novelties that may be useful for the well-established GNN challenges.
-2. If the step 1 succeeds, it will be interesting to see what it actually learned because it should've learned some algorithm. 
+This is an educational project with the goal of understanding the capabilities of GNNs and exploring their current theoretical foundations. The idea is to engineer a GNN that can solve specific graph problems for which algorithmic solutions already exist. Here's my motivation:
+
+1. To the best of my knowledge, GNNs are currently not quite capable of solving non-trivial algorithmic tasks on graphs (see the Literature overview). By solving these tasks, we might discover new insights that could be useful for addressing well-established challenges in the field of GNNs.
+
+2. If we succeed in step 1, it will be interesting to observe what the GNN actually learned, as it should have acquired some algorithmic knowledge.
 
 ## Contents
 
