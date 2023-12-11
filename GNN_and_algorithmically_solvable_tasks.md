@@ -1,4 +1,4 @@
-# Literacure overview
+# Literature overview
 
 This note concentrates on the grah planarity detection problem via GNNs. It contains:
 
