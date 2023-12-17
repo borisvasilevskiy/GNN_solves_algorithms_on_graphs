@@ -53,8 +53,8 @@ class TrainEval(object):
     def train(self, model, criterion, optimizer, train_loader):
         model.train()
 
-        logging.debug(f'[before training] lin sum^2: '
-                       f'{torch.pow(model.lin.weight, 2).sum()}')
+        # logging.debug(f'[before training] lin sum^2: '
+        #               f'{torch.pow(model.lin.weight, 2).sum()}')
 
         for data in train_loader:  # Iterate in batches over the training ds
             out = self.run_model(data, model)
@@ -64,8 +64,8 @@ class TrainEval(object):
             optimizer.step()  # Update parameters based on gradients.
             optimizer.zero_grad()  # Clear gradients.
 
-        logging.debug(f'[after training] lin sum^2: '
-                       f'{torch.pow(model.lin.weight, 2).sum()}')
+        # logging.debug(f'[after training] lin sum^2: '
+        #               f'{torch.pow(model.lin.weight, 2).sum()}')
 
     def main(self, epoch, train_loader, test_loader):
         train_metrics_per_epoch = []
