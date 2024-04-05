@@ -15,13 +15,13 @@ class SAGE(torch.nn.Module):
         self.conv3 = SAGEConv(hidden_channels, hidden_channels)
         self.lin = torch.nn.Linear(hidden_channels, num_classes)
 
-    def forward(self, x, edge_index, batch):
+    def forward(self, x, edge_index, batch, edge_weight=None):
         # 1. Obtain node embeddings
-        x = self.conv1(x, edge_index)
+        x = self.conv1(x, edge_index, edge_weight)
         x = x.relu()
-        x = self.conv2(x, edge_index)
+        x = self.conv2(x, edge_index, edge_weight)
         x = x.relu()
-        x = self.conv3(x, edge_index)
+        x = self.conv3(x, edge_index, edge_weight)
 
         # 2. Readout layer
         x = global_mean_pool(x, batch)  # [batch_size, hidden_channels]
@@ -56,7 +56,7 @@ class CustomSAGE(torch.nn.Module):
         self.apply_dropout = apply_dropout
         self.lin = torch.nn.Linear(hidden_channels, num_classes)
 
-    def forward(self, x, edge_index, batch):
+    def forward(self, x, edge_index, batch, edge_weight=None):
         # 1. Obtain node embeddings
         x = self.sage(x, edge_index)
 
