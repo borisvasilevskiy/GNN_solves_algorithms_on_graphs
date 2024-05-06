@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "gnn-solves-algorithms-on-graphs"
+version = "0.1.0"
+description = "This is an educational project with the goal of understanding the capabilities of GNNs and exploring their current theoretical foundations. The idea is to engineer a GNN that can solve specific graph problems for which algorithmic solutions already exist."
+authors = ["Boris Vasilevskiy <vasilevskiy.boris@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "3.12"
+torch-geometric = "2.3.1"
+agent-torch = "2.0.1"
+numpy = "1.26.4"
+matplotlib = "3.8.2"
+networkx = "2.8.4"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
